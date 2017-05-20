@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<head>
+	<html>
+  <meta charset="utf-8">
+  <title>管理博客</title>
+  <meta name="viewport" content="width=device-width"> 
+  <link rel="stylesheet" href="css/bootstrap.css" />
+  <link rel="stylesheet" href="css/style2.css" />
+  <link rel="stylesheet" href="css/templatemo_main.css">
+  <link rel="stylesheet" href="css/code-editor.css" />
+</head>
+<body>
+	<header id="fh5co-header" role="banner">
+		<div class="container">
+			<div class="header-inner">
+        <strong><i class="glyphicon glyphicon-list"></i>我的博客</strong>
+        <nav role="navigation">
+				 <ul>
+					<li><a href="index.html"><i class="glyphicon glyphicon-home"></i></a></li>
+					<li><a href="writeBlog.html"><i class="glyphicon glyphicon-pencil"></i></a></li>
+					<li><a href="person.html"><i class="glyphicon glyphicon-user"></i></a></li>
+				 </ul>
+				</nav>
+			</div>
+		</div>
+	</header>
+<div class="navbar navbar-default" role="navigation">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">T</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button> 
+      </div>   
+    </div>
+    <div class="template-page-wrapper">
+      <div class="navbar-collapse collapse templatemo-sidebar">
+        <ul id="tagList" class="templatemo-sidebar-menu"></ul>
+      </div>
+
+      <div class="templatemo-content-wrapper">
+        <div class="templatemo-content">
+           <div id="blogList" class="list-group">
+           </div> 
+        </div>
+      </div> 
+	<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+     <div class="modal-dialog">
+      <div class="modal-content">
+           <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              <h3>&nbsp;</h3>
+           </div>
+         
+          <div class="modal-body" style="background-color: #edeff1;">
+			<div class="row">
+				 <div class="col-md-7">
+			    <div class="form-group input-group-lg">
+			      <input type="text" id="blogTitle" class="form-control " placeholder="标题"/>
+			    </div>
+			  </div>
+			  <div class="col-md-2">
+				<div class="form-group" style="display:none;">
+					<button class="btn btn-default btn-block" onclick="chooseImagClick()">选择封面</button>
+					<input id="imag" type="file"  style="display: none;"/>
+				</div>
+				</div>
+				<div class="col-md-3">
+				 <div  class="form-group">
+                   <input type="text" id="tagName" class="form-control" placeholder="输入一些标签，例如:mysql,html,天文,数学" />
+                 </div>
+                 <div id="tag" class="form-group"></div>
+				</div>
+			   </div>
+            
+            <div id="editor"></div>
+            <button id="subBlog" type="submit" class="btn btn-success">保存</button>
+             <button id="saveBlog" type="submit" class="btn btn-default">草稿</button>
+		   </div> 
+			</div>
+          </div>
+      </div>
+    </div>
+        <footer class="templatemo-footer">
+          <div class="templatemo-copyright">
+          <p>Copyright &copy;开源博客开发小组</p>
+          </div>
+        </footer>
+
+    <script src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js" ></script>
+    <script src="https://cdn.bootcss.com/ace/1.2.6/ace.js"></script>
+    <script type="text/javascript">
+    	var temptag;
+    	//编译json对象为url字符串
+		 var parseParam=function(param, key){ 
+		  var paramStr=""; 
+		  if(param instanceof String||param instanceof Number||param instanceof Boolean){ 
+		    paramStr+="&"+key+"="+encodeURIComponent(param); 
+		  }else{ 
+		    $.each(param,function(i){ 
+		      var k=(key==null?i:key+(param instanceof Array?"["+i+"]":"."+i)); 
+		      paramStr+='&'+parseParam(this, k); 
+		    }); 
+		  } 
+		  return paramStr.substr(1); 
+		};
+    	var bloglist;
+    	$(document).ready(function(){
+    		loadMyTagList();
+    	})
+    	function loadMyTagList(){
+    	 	$.getJSON("./article_gettags",
+	  			function(data){
+	  				for(var i=0;i<data.length;i++){
+	  					$("#tagList").append("<li><a id='"+data[i].content
+	  							+"' onclick='loadBlogByTag($(this))'><i class='glyphicon glyphicon-tag'></i>&nbsp;"+data[i].content+"</a></li>")
+	  				}
+	  			});
+    	}
+    	function updateloadblog(tag){
+    		$.getJSON("./article_getuserarticlesbytag?tag="+tag,
+				function(data){
+					bloglist = data;
+					$("#tagName").text(tag);
+    				$("#blogList").empty();
+					for(var i=0;i<data.length;i++){
+						$("#blogList").append("<div class='panel panel-default'>"
+						            +"<div class='panel-heading'>"
+						            +"<a href='content.html'><i class='glyphicon glyphicon-list-alt'></i>"
+						            +data[i].title+"</a>"	
+						            +"<div class='pull-right'>"
+						            +"<i id='"+i+"' class='btn glyphicon glyphicon-edit'  data-toggle=\"modal\" data-target=\"#updateModal\" onclick='editBlog("+i+")'></i>"
+						            +"<i id='"+i+"' class='btn glyphicon glyphicon-trash' onclick='trashBlog("+i+")'></i>"
+						            +"</div></div></div>");
+					}
+			});	
+    	}
+    	function loadBlogByTag(id){
+    		var tag=id.attr("id");
+    		temptag=tag;
+    		$.getJSON("./article_getuserarticlesbytag?tag="+tag,
+				function(data){
+					bloglist = data;
+					$("#tagName").text(tag);
+    				$("#blogList").empty();
+					for(var i=0;i<data.length;i++){
+						$("#blogList").append("<div class='panel panel-default'>"
+						            +"<div class='panel-heading'>"
+						            +"<a href='content.html?aid="+data[i].aid+"&userid="+data[i].uid+"'><i class='glyphicon glyphicon-list-alt'></i>"
+						            +data[i].title+"</a>"	
+						            +"<div class='pull-right'>"
+						            +"<i id='"+i+"' class='btn glyphicon glyphicon-edit'  data-toggle=\"modal\" data-target=\"#updateModal\" onclick='editBlog("+i+")'></i>"
+						            +"<i id='"+i+"' class='btn glyphicon glyphicon-trash' onclick='trashBlog("+i+")'></i>"
+						            +"</div></div></div>");
+					}
+			});	
+    	}
+ function editBlog(id){
+ 	//alert(bloglist[id].title);
+ 	$("#blogTitle").val(bloglist[id].title);
+ 	$("#tagName").val(bloglist[id].tag);
+ 	var editor = ace.edit("editor");
+    editor.setFontSize("13px");
+    editor.setTheme("ace/theme/github");
+     
+ 	editor.setValue(bloglist[id].content);
+ 	 //更新博文
+   $("#subBlog").click(function(){
+   	 var title=$("#blogTitle").val();
+   	 var tag=$("#tagName").val();
+   	 var imag= $("#imag").val();
+     var content=editor.getValue();
+     bloglist[id].title = title;
+     bloglist[id].tag = tag;
+     bloglist[id].content = content;
+     $.get("./article_newupdatearticle?"+parseParam(bloglist[id]),null,function(data){
+     		alert(data);
+     		updateloadblog(temptag);
+     	});
+   });
+   
+       //保存草稿
+   $("#saveBlog").click(function(){
+   	 var title=$("#blogTitle").val();
+   	 var tag=$("#tagName").val();
+   	 var imag= $("#imag").val();
+     var content=editor.getValue();
+     bloglist[id].title = title;
+     bloglist[id].tag = tag;
+     bloglist[id].content = content;
+     bloglist[id].type = 1;
+     $.get("./article_newupdatearticle?"+parseParam(bloglist[id]),null,function(data){
+     		alert(data);
+     		updateloadblog(temptag);
+     	});
+   });
+ }
+ function trashBlog(id){
+ 	$.get("article_delarticle?aid="+bloglist[id].aid,null,function(data){alert(data);updateloadblog(temptag);});
+ }
+    </script>
+  </body>
+</html>

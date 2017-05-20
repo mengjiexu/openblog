@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<head>
+	<html>
+  <meta charset="utf-8">
+  <title>newBlog</title>
+  <meta name="viewport" content="width=device-width"> 
+  <link rel="stylesheet" href="css/bootstrap.css" />
+  <link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+<body>
+<div class="header">
+  <div class="header-bottom">
+	<div class="navigation">
+	  <nav class="navbar navbar-default" role="navigation">
+	    <div class="wrap">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#collapse-1">
+					<span class="sr-only">T</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<strong><i class="glyphicon glyphicon-user"></i>个人信息</strong>
+			</div>
+		
+			<div class="collapse navbar-collapse" id="collapse-1">
+			  <ul class="nav navbar-nav navbar-right">
+				<li><a href="index.html"><i class="glyphicon glyphicon-home"></i></a></li>
+				<li><a href="myBlog.html"><i class="glyphicon glyphicon-th-list"></i></a></li>
+				<li><a href="writeBlog.html"><i class="glyphicon glyphicon-pencil"></i></a></li>
+		      </ul>
+			</div>
+		</div>
+	  </div>
+    </nav>
+  </div>
+</div>
+<!-- end  导航栏 -->
+          <div class="container">
+            <div class="table-responsive" >
+		     <table class="table table-hover">
+			  <tr>
+			   <th>头像</th>
+			   <th id="imag">
+			    <div>
+				 <img src="img/adduser.ico" /> 
+			    </div>
+			   </th>
+			   <th><a id="editImage">编辑</a> </th>
+			  </tr>
+			  <tr >
+			   <td>姓名</td>
+			   <td id="UserName"></td>
+			   <td ><a id="editName">编辑</a></td>
+			  </tr>
+			  <tr >
+			   <td>邮箱</td>
+			   <td id="UserEmail"></td>
+			   <td ><a id="editEmail">编辑</a></td>
+			  </tr>
+			  <tr >
+			    <td>密码</td>
+				<td id="UserPassword">*********</td>
+				<td ><a id="editPassword">编辑</a></td>
+		      </tr>
+		      <tr >
+			    <td>账户状态</td>
+				<td>正常</td>
+				<td ></td>
+		      </tr>
+			  </table>
+		  </div>
+             	  
+             <div class="form-group" style="display:none;">
+             	  <label>账户申诉</label>
+                  <textarea  class="form-control"  rows="3"></textarea>
+                  <input type="submit" class="btn btn-primary">提交</button>
+             </div>
+        	</div> 
+
+	<div class="footer">
+		<div class="footer-bottom">
+			<div class="text-center">
+			   <p style="color: white;">Copyright &copy;开源博客开发小组</p>
+			</div>
+		</div>
+	</div>
+
+    <script src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js" ></script>
+ <script type="text/javascript">
+ //自定义sleep函数
+function sleep(millis,content){
+	setTimeout(content,1000);
+}
+ //编译json对象为url字符串
+ var parseParam=function(param, key){ 
+  var paramStr=""; 
+  if(param instanceof String||param instanceof Number||param instanceof Boolean){ 
+    paramStr+="&"+key+"="+encodeURIComponent(param); 
+  }else{ 
+    $.each(param,function(i){ 
+      var k=(key==null?i:key+(param instanceof Array?"["+i+"]":"."+i)); 
+      paramStr+='&'+parseParam(this, k); 
+    }); 
+  } 
+  return paramStr.substr(1); 
+};
+	var user=null;
+	$(document).ready(function(){
+	 	loadUserInfo();
+	})
+	function loadUserInfo(){
+		$.getJSON("./user_getbloggerbyid",function(data){
+		 if(data){
+		 	$("#UserName").text(data.username);
+		 	$("#UserEmail").text(data.useremail);
+		 	$("#UserPassword").text("******");
+		 	user=data;
+		 }
+	 	});
+	}
+	$("#editImage").click(function(){
+	  	$("#target").remove();
+	  	    $("#imag").append("<div id='target'><div class='form-group'><label >用户头像</label><input type='file' name='file'><p class='help-block'>请选择一张不大于1M的图片</p></div>"
+	  	                 +"<div  class='form-group'><button id='okImage' type='submit' class='btn btn-primary'>确定</button><button id='cancelImage' type='button' class='btn'>取消</button></div></div>");
+	        $("#cancelImage").click(function(){
+	        	  $("#target").remove();
+	        });
+	});
+ 	$("#editName").click(function(){
+ 		  var name=$("#UserName").text();
+ 		  $("#UserName").empty().append("<div class='form-group input-group-sm'><label for='name'>新用户名</label>"
+ 		                                +"<input id='contentName' type='text' class='form-control' id='name' placeholder='输入新用户名'></div>"
+ 		                                +"<button id='okName' class='btn btn-primary'>确定</button><button id='cancelName' class='btn'>取消</button>");
+ 		  $("#okName").click(function(){
+ 		  	  user.username = $("#contentName").val();
+ 		  	  $.get("./user_updateuser",parseParam(user));
+ 		  	  sleep(1000,"loadUserInfo();");
+ 		  })
+ 		  $("#cancelName").click(function(){
+ 		  	$("#UserName").empty().text(name);
+ 		  })
+   	});
+ 	$("#editEmail").click(function(){
+ 		  var email=$("#UserEmail").text();
+ 		  $("#UserEmail").empty().append("<div class='form-group input-group-sm'><label for='Email'>新邮箱</label>"
+ 		                                 +"<input id='contentEmail' type='text' class='form-control' id='Email' placeholder='输入新登邮箱地址'></div>"
+ 		                                 +"<button id='okEmail' class='btn btn-primary'>确定</button><button id='cancelEmail' class='btn'>取消</button>");
+ 		  $("#okEmail").click(function(){
+ 		      user.useremail = $("#contentEmail").val();
+ 		  	  $.get("./user_updateuser",parseParam(user));
+ 		  	  sleep(1000,"loadUserInfo();");
+ 		  })
+ 		  $("#cancelEmail").click(function(){
+ 		  	  $("#UserEmail").empty().text(email);
+ 		  })
+ 	});
+ 	  	
+ 	$("#editPassword").click(function(){
+ 		  $("#UserPassword").empty().append("<div class='form-group input-group-sm' id='changepassdiv'><label for='UserPassword'>当前密码</label><input id='contentPassword' type='password' class='form-control' id='UserPassword' placeholder='输入当前密码'>"
+ 		                                    +"<div id='passTip'></div><div><a href='' >忘记密码？</a></div></div>"
+ 		                                    +"<div class='form-group input-group-sm'><label for='nUserPassword'>新密码</label><input id='contentnPassword' type='password' class='form-control' id='nUserPassword' placeholder='输入新密码'></div>"
+ 		                                    +"<button id='okPassword' class='btn btn-primary'>确定</button><button id='cancelPassword' class='btn'>取消</button>");
+ 		  $("#contentPassword").change(function(){
+ 		  	if($("#contentPassword").val()!=user.userpass){
+ 		  		$("#passTip").append("<strong style='color: red;'>密码不正确</strong>");
+ 		  	}else{
+ 		  		$("#passTip").empty();
+ 		  	}
+ 		  })
+ 		  
+ 		  $("#okPassword").click(function(){
+ 		  	if($("#contentPassword").val()!=user.userpass){
+ 		  		alert("密码不正确");
+ 		  		return;
+ 		  	}
+ 		  	  user.userpass = $("#contentnPassword").val();
+ 		  	  $.get("./user_updateuser",parseParam(user));
+ 		  	  sleep(1000,"loadUserInfo();");
+ 		  });
+ 		  $("#cancelPassword").click(function(){
+ 		  	  $("#contentPassword").empty().text("******");
+ 		  	  //$("#changepassdiv").remove();
+ 		  })
+ 	});
+    </script>
+  </body>
+</html>

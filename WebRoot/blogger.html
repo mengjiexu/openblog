@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>newBlog</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/templatemo-style.css">
+        	<link rel="stylesheet" href="css/style.css" />
+    </head>
+    <body>
+        <!-- SIDEBAR -->
+        <div class="sidebar-menu hidden-xs hidden-sm">
+            <div class="top-section">
+                <div class="profile-image">
+                    <img id="bloggerImg" src="images/c3.jpg" alt="Volton">
+                </div>
+                <h3 class="profile-title" id="bloggerName">博主昵称</h3>
+                <p class="profile-description" id="bloggerword">个性签名</p>
+            </div> <!-- top-section -->
+            <div class="main-navigation">
+                <ul class="navigation">
+                	<li><a href="index.html"><i class="glyphicon glyphicon-home">&nbsp;返回首页</i></a></li>
+                    <li><a  onclick="loadMyBlog()"><i class="glyphicon glyphicon-book">&nbsp;我的博客</i></a></li>
+                    <li><a  onclick="loadMessage()"><i class="glyphicon glyphicon-bell">&nbsp;我的留言</i></a></li>
+                    <li><a onclick="addMessage()"><i class="glyphicon glyphicon-pencil">&nbsp;给我留言</i></a></li>
+                </ul>
+            </div> <!-- .main-navigation -->
+        </div> <!-- .sidebar-menu -->
+        
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="fluid-container">
+                <div class="content-wrapper">
+                    <div class="page-section">
+                        <div class="col-md-12">
+                        	<div id="contentList" ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+		<div class="footer-bottom">
+		</div>
+	</div>
+    </body>
+    <script type="text/javascript" src="js/jquery.min.js" ></script>
+    <script type="text/javascript">
+    String.prototype.replaceAll = function(s1,s2){
+　　		return this.replace(new RegExp(s1,"gm"),s2);
+　　 }
+    function ToHTML(text)
+	{
+		text = text.replaceAll("<", "&lt;").replaceAll(">", "&gt;").
+				replaceAll("\n", "<br/>").replaceAll("\r\n", "<br/>")
+				.replaceAll("\t", "&nbsp;&nbsp;&nbsp;&nbsp;").replaceAll(" ", "&nbsp;").replaceAll("\"", "&quot;");
+		if(text.length>100){
+			text=text.substr(1,100);
+		}
+		text = "<p>"+text+"</p>";
+		//alert(text);
+		return text;
+	}
+    /*用于传参*/
+function GetUrlParms() {
+    var args = new Object();
+    var query = location.search.substring(1); //获取查询串   
+    var pairs = query.split("&"); //在逗号处断开   
+    for (var i = 0; i < pairs.length; i++) {
+        var pos = pairs[i].indexOf('='); //查找name=value   
+        if (pos == -1) continue; //如果没有找到就跳过   
+        var argname = pairs[i].substring(0, pos); //提取name   
+        var value = pairs[i].substring(pos + 1); //提取value   
+        args[argname] = unescape(value); //存为属性   
+    }
+    return args;
+}
+function loadBlogger(){
+	$.getJSON("./user_getbloggerbyid?userid="+GetUrlParms()["userid"],
+		function(data){
+			$("#bloggerImg").attr("src","images/fcrt3.jpg");
+			$("#bloggerName").html("<a href=\"./blogger.html?userid="+data.uid+"\">"+data.username+"</a>");
+			$("#bloggerword").text(data.word);
+		}
+	);
+}
+$(document).ready(function(){
+	loadBlogger();
+	loadMyBlog();
+})
+     function loadMyBlog(){
+     		 $("#contentList").empty();
+     		 $.getJSON("./article_getarticlebyuserid?userid="+GetUrlParms()["userid"],function(data){
+     		 		for(var i=0;i<data.length;i++){
+						var dianzantimes=0;
+						$.get("./article_getdianzan?aid="+data[i].aid,null,function(data){
+							dianzantimes = data;
+						});
+						$("#contentList").append("<div class='article'>'<div class='article-left'>"
+						  +"<img src='images/t2.jpg'></div>"
+						  +"<div class='article-right'>"
+						  +"<div class='article-title'>"
+						  +"<a class='title' href='content.html'>"+data[i].title+"</a></div>"
+						  +"<div class='article-text'>"
+						  +"<p>"+ToHTML(data[i].content)+"</p>"
+						  +"<p>On "+data[i].time.replace("T"," ")+"</p>" 
+						  +"<span class='glyphicon glyphicon-comment'></span>2"
+						  +"<span class='glyphicon glyphicon-eye-open'></span>"+data[i].looktimes 
+						  +"<span class='glyphicon glyphicon-thumbs-up'></span>"+dianzantimes
+						 +"</p></div></div><div class='clearfix'></div></div>")	;
+					}
+     		 });
+  }
+function loadMessage(){
+	$("#contentList").empty();
+	//alert('hello');
+	$.getJSON("./comment_getliuyanbyuserid?userid="+GetUrlParms()["userid"],function(data){
+		 		for(var i=0;i<data.length;i++){
+		 			var username;
+		 			$.getJSON("./user_getbloggerbyid?userid="+data[i].fromid,function(user,data){
+		 				username = user.username;
+		 			})
+		 			$("#contentList").append("<div style='padding: 20px 0 20px 0;'>"                            	
+                    	+"<a href='#'><span class='label label-info'>用户ID："+data[i].fromid+"</span></a>"
+                        +"<div class='jumbotron' style='margin-top: 10px;'>"
+	    				+"<p>"+data[i].content+"</p></div></div>");
+		}
+	});
+ }
+function addMessage(){
+	$("#contentList").empty().append("<div class='form-group'>"
+                             +"<textarea id='messageContent' class='form-control' rows='15' placeholder='内容'></textarea>"
+                             +"</div><button class='btn btn-success' onclick='subMessage()'>留言</button>");
+ }
+ function subMessage(){
+ 	var content=$("#messageContent").val();
+ 	$.get("./comment_addoneliuyan?userid="+GetUrlParms()["userid"]+"&content="+content,null,function(data){
+ 		alert(data);
+ 	});
+ }
+    </script>
+</html>

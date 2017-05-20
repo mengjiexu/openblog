@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<head>
+	<html>
+  <meta charset="utf-8">
+  <title>写博文</title>
+  <meta name="viewport" content="width=device-width"> 
+  <link rel="stylesheet" href="css/bootstrap.css" />
+  <link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
+  <link rel="stylesheet" href="css/code-editor.css" />
+</head>
+<body>
+	<div class="header">
+  <div class="header-bottom">
+	<div class="navigation">
+	  <nav class="navbar navbar-default" role="navigation">
+	    <div class="wrap">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#collapse-1">
+					<span class="sr-only">T</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<strong><i class="glyphicon glyphicon-edit"></i>写博客</strong>
+			</div>
+		
+			<div class="collapse navbar-collapse" id="collapse-1">
+			  <ul class="nav navbar-nav navbar-right">
+				<li><a href="index.html"><i class="glyphicon glyphicon-home"></i></a></li>
+				<li><a href="myBlog.html"><i class="glyphicon glyphicon-th-list"></i></a></li>
+				<li><a href="person.html"><i class="glyphicon glyphicon-user"></i></a></li>
+		      </ul>
+			</div>
+		</div>
+      </nav>
+	</div>
+  </div>
+</div>
+<!-- end  导航栏 -->
+        <div style="background-color: whitesmoke; margin-bottom: 10px;">
+          <div class="container"  style="padding-top: 20px;">
+			<div class="row">
+			  <div class="col-md-7">
+			    <div class="form-group input-group-lg">
+			      <input type="text" id="blogTitle" class="form-control " placeholder="标题"/>
+			    </div>
+			  </div>
+			  <div class="col-md-2">
+				<div class="form-group" style="display:none;">
+					<button class="btn btn-default btn-block" onclick="chooseImagClick()">选择封面</button>
+					<input id="imag" type="file"  style="display: none;"/>
+				</div>
+				</div>
+				<div class="col-md-3">
+				 <div  class="form-group">
+                   <input type="text" id="tagName" class="form-control" placeholder="输入一些标签，例如:mysql,html,天文,数学" />
+                 </div>
+                 <div id="tag" class="form-group"></div>
+				</div>
+			   </div>
+            
+            <div id="editor"></div>
+            <button id="subBlog" type="submit" class="btn btn-success">保存</button>
+             <button id="saveBlog" type="submit" class="btn btn-default">草稿</button>
+		   </div> 
+		</div>   
+	<div style="display:block;height:80px;"></div>
+	<div class="footer">
+		<div class="footer-bottom">
+			<div class="text-center">
+			   <p style="color: white;">Copyright &copy;开源博客开发小组</p>
+			</div>
+		</div>
+	</div>
+
+    <script src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js" ></script>
+    <script src="https://cdn.bootcss.com/ace/1.2.6/ace.js"></script>
+    <script type="text/javascript">
+    	$(document).ready(function(){
+    		//loadTag();
+    		blogContent();
+    	})
+ //加载标签
+function  loadTag(){
+   $("#tagName").empty();
+  for(var i=0;i<10;i++){
+      $("#tagName").prepend("<option value='"+i+"'>"+i+"</option>");
+     }
+      $("#tagName").append("<option value='add'>添加新标签</option>");   		
+  }
+    	  
+ $("#tagName").click(function(){
+	if($("#tagName").val()=="add"){
+			$("#tag").empty().append("<div class='input-group'><input id='Name' type='text'  class='form-control'>"
+                             +"<span class='input-group-addon' onclick='addTag()'>添加</span>"
+                             +"<span class='input-group-addon' onclick='cancle()'>取消</span></div>");
+		 }else{
+			$("#tag").empty();
+		}
+	})
+//点击选择封面，file输入框被触发；
+function chooseImagClick(){
+   $("#imag").click();
+}
+function blogContent(){
+  var editor = ace.edit("editor");
+      editor.setFontSize("13px");
+      editor.setTheme("ace/theme/github");
+     
+     //发表博文
+   $("#subBlog").click(function(){
+   	 var title=$("#blogTitle").val();
+   	 var tag=$("#tagName").val();
+   	 var imag= $("#imag").val();
+     var content=editor.getValue();
+     alert("./article_writeonecaogao?title="+title+"&tag="
+     	+tag+"&content="+encodeURIComponent(content));
+     $.get("./article_writeoneblog?title="+title+"&tag="
+     	+tag+"&content="+encodeURIComponent(content),null,function(data){
+     		alert(data);
+     	});
+     //alert("发表博文");
+   });
+   
+       //保存博文
+   $("#saveBlog").click(function(){
+   	 var title=$("#blogTitle").val();
+   	 var tag=$("#tagName").val();
+   	 var imag= $("#imag").val();
+     var content=editor.getValue();
+     $.get("./article_writeonecaogao?title="+title+"&tag="
+     	+tag+"&content="+encodeURIComponent(content),null,function(data){
+     		alert(data);
+     	});
+     //alert("保存博文");
+   });
+ }
+    </script>
+  </body>
+</html>
